@@ -1,4 +1,5 @@
 # enneagramm
+This is an enneagram personality test in german.
 
 ## Project setup
 ```
