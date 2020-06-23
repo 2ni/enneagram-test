@@ -1,9 +1,9 @@
 <template>
   <div id="questionnaire">
-    {{answers}} {{numberOfQuestions}}
-    <ul>
+    <!-- {{answers}} {{numberOfQuestions}} -->
+    <ul v-bind:class="{hidden: showResults}">
       <li v-for="q in questions" :key="q.question | hash">
-        <div class="question" v-bind:class="{error: hasError.indexOf($options.filters.hash(q.question)) > -1}">({{q.type}}) {{q.question}}</div>
+        <div class="question" v-bind:class="{error: hasError.indexOf($options.filters.hash(q.question)) > -1}">{{q.question}}</div>
         <div class="answerBlock">
           <div>
             <input v-on:change="questionAnswered" type="radio" :name="q.question | hash" value="yes" :id="1 + q.question | hash" :data-type="q.type">
@@ -18,11 +18,11 @@
         </div>
       </li>
     </ul>
-    <div id="showresults">
-      <button class="large green button" :disabled="openQuestions.length > 0" v-on:click="getStructure">Zeige mir mein Enneagramm Typ</button>
+    <div id="showresults" v-bind:class="{hidden: showResults}">
+      <button class="large green button" v-on:click="getStructure">Zeige mir mein Enneagramm Typ</button>
       <div class="error" v-if="hasError.length > 0">Bitte beantworte jede Frage mit ja oder nein</div>
     </div>
-    <div id="results" v-bind:class="{hidden: !showResults}">
+    <div id="results" :class="showResults ? 'resultsVisible' : 'resultsHidden'">
       <div class="graph">
         <div class="bars">
           <div style="height: 100%; width: 0; border: 0; margin: 0;" class="graph-element bar" />
@@ -35,11 +35,13 @@
           />
         </div>
         <div class="labels">
+          <div style="height: 100%; width: 0; border: 0; margin: 0;" class="graph-element label" />
           <div
-             class="graph-element label"
-             v-for="(amount, type) in answers"
-             v-bind:key="type"
-             v-bind:style="{width:100/Object.keys(answers).length-1 + '%'}">
+            class="graph-element label"
+            v-for="(amount, type) in answers"
+            v-bind:class="{winner: isMaxPercent(type)}"
+            v-bind:key="type"
+            v-bind:style="{width:100/Object.keys(answers).length-2 + '%'}">
             Typ {{type}} | {{answerInPercent(type)}}%
           </div>
         </div>
@@ -54,7 +56,7 @@ import QUESTIONS from '../questions.json'
 export default {
   data () {
     return {
-      questions: shuffle(QUESTIONS).slice(0, 100),
+      questions: shuffle(QUESTIONS),
       numberOfQuestions: {},
       openQuestions: [],
       answers: {},
@@ -63,6 +65,9 @@ export default {
     }
   },
   created () {
+    if (this.$route.query.q) {
+      this.questions = this.questions.slice(0, this.$route.query.q)
+    }
     this.numberOfQuestions.total = this.questions.length
     this.questions.forEach(question => {
       this.$set(this.answers, question.type, 0)
@@ -70,6 +75,9 @@ export default {
       this.openQuestions.push(this.$options.filters.hash(question.question))
     })
     this.$emit('updateStatus', this.status)
+  },
+  destroyed () {
+    this.$emit('updateStatus', '')
   },
   computed: {
     status: function () {
@@ -105,9 +113,12 @@ export default {
       // not every question was answered
       if (this.openQuestions.length > 0) {
         this.hasError = this.openQuestions
+        return
       }
 
       this.showResults = true
+      const el = this.$el.querySelector('#results')
+      el.scrollIntoView({ behavior: 'smooth' })
     }
   }
 }
@@ -134,32 +145,30 @@ function shuffle (array) {
 </script>
 
 <style scoped>
+#results {
+  margin-top: 1em;
+  transition: visibility 0s, opacity 0.5s linear;
+}
+
+.resultsHidden {
+  visibility: hidden;
+  opacity: 0;
+}
+
+.resultsVsible {
+  visibility: visible;
+  opacity: 1;
+}
+
 .hidden {
   display: none;
 }
 
-@keyframes fadein {
-  from { opacity: 0; }
-  to   { opacity: 1; }
-}
-
-#showresults {
-  text-align: center;
-}
-
-#results {
-  margin-top: 1rem;
-  animation-name: fadein;
-  animation-duration: 2s;
-}
-
 .graph {
-    width: 70%;
-    max-width: 800px;
-    height: 20rem;
-    border: 1px solid #aeaeae;
-    background-color: #fff;
-    padding: 1rem 0 1.5rem .3rem;
+  height: 20rem;
+  border: 1px solid #aeaeae;
+  background-color: #fff;
+  padding: 1rem 0 1.5rem .3rem;
 }
 
 .graph .bars {
@@ -176,13 +185,18 @@ function shuffle (array) {
   border: 2px solid #357374;
 }
 
+.graph-element.label.winner {
+  font-weight: bold;
+}
+
 .graph-element.bar {
   border: 2px solid transparent;
 }
 
 .graph-element.label {
-  text-align: center;
+  font-size: .8rem;
   background-color: transparent;
+  border: 2px solid transparent;
 }
 
 #questionnaire {
@@ -190,18 +204,19 @@ function shuffle (array) {
 }
 
 #questionnaire ul {
-  width: 70%;
-  margin-right: auto;
-  margin-left: auto;
-  max-width: 800px;
   list-style-type: none;
   padding: 0;
+}
+
+@media only screen and (min-width: 641px) {
+  #questionnaire li {
+    display: flex;
+  }
 }
 
 #questionnaire li {
   text-align: left;
   padding: 10px 0;
-  display: flex;
   align-items: center;
 }
 
@@ -269,7 +284,7 @@ function shuffle (array) {
   visibility: visible;
 }
 
-span.error {
+div.error {
   color: red;
   font-weight: bold;
 }

@@ -5,8 +5,8 @@
       <router-link to="/about">About</router-link> |
       <router-link to="/questionnaire">Questionnaire</router-link>
     </div>
-    <div id="status">{{status}}</div>
-    <router-view class="content" @updateStatus="updateStatus"/>
+    <div id="status" :class="status ? 'statusVisible' : 'statusHidden'">{{status}}</div>
+    <router-view class="content" :class="status ? 'contentWithStatus' : 'contentWithOutStatus'" @updateStatus="updateStatus"/>
     <div id="shim"></div>
   </div>
 </template>
@@ -20,7 +20,6 @@ export default {
   },
   methods: {
     updateStatus: function (status) {
-      console.log(status)
       this.status = status
     }
   }
@@ -28,10 +27,6 @@ export default {
 </script>
 
 <style>
-html {
-  height: 100%;
-}
-
 body {
   height: 100%;
   margin: 0;
@@ -73,6 +68,14 @@ body {
   color: #42b983;
 }
 
+.statusVisible {
+  display: flex;
+}
+
+.statusHidden {
+  display: none;
+}
+
 #status {
   height: 2rem;
   background-color: #8bc8c9;
@@ -80,16 +83,24 @@ body {
   width: 100%;
   position: fixed;
   top: 3rem;
-  display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1;
 }
 
-.content {
-  margin: 0 5%;
+.contentWithStatus {
+  margin-top: 6rem;
+}
+
+.contentWithOutStatus {
   margin-top: 5rem;
+}
+
+.content {
   border: 1px solid black;
+  max-width: 1024px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 #shim {
