@@ -117,8 +117,6 @@ export default {
       }
 
       this.showResults = true
-      const el = this.$el.querySelector('#results')
-      el.scrollIntoView({ behavior: 'smooth' })
     }
   }
 }
