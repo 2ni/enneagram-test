@@ -8,7 +8,7 @@ Vue.use(VueRouter)
 
 const routes = [
   { path: '/', name: 'Home', component: Home },
-  { path: '/questionnaire', name: 'Questionnaire', component: Questionnaire },
+  { path: '/test', name: 'Questionnaire', component: Questionnaire },
   {
     path: '/about',
     name: 'About',
@@ -24,6 +24,18 @@ const router = new VueRouter({
   mode: 'history',
   base: process.env.BASE_URL,
   routes
+})
+
+function hasQueryParams (route) {
+  return !!Object.keys(route.query).length
+}
+
+router.beforeEach((to, from, next) => {
+  if (!hasQueryParams(to) && hasQueryParams(from)) {
+    next({ name: to.name, query: from.query })
+  } else {
+    next()
+  }
 })
 
 export default router

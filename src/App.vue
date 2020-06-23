@@ -3,7 +3,7 @@
     <div id="nav">
       <router-link to="/">Home</router-link> |
       <router-link to="/about">About</router-link> |
-      <router-link to="/questionnaire">Questionnaire</router-link>
+      <router-link to="/test">Test</router-link>
     </div>
     <div id="status" :class="status ? 'statusVisible' : 'statusHidden'">{{status}}</div>
     <router-view class="content" :class="status ? 'contentWithStatus' : 'contentWithOutStatus'" @updateStatus="updateStatus"/>
