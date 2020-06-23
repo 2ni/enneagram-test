@@ -97,7 +97,6 @@ body {
 }
 
 .content {
-  border: 1px solid black;
   max-width: 1024px;
   margin-left: auto;
   margin-right: auto;
