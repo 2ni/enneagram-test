@@ -54,6 +54,7 @@
 import QUESTIONS from '../questions.json'
 
 export default {
+  title: 'Enneagramm Test',
   data () {
     return {
       questions: shuffle(QUESTIONS),
