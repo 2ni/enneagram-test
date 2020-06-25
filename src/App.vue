@@ -69,13 +69,19 @@ body {
 
 a {
   color: #fff;
+  font-weight:bold;
+  text-decoration:none;
+}
+
+.link {
+  color: #fff;
   display: inline-block;
   transition: .3s;
   font-weight:bold;
   text-decoration:none;
 }
 
-a:hover {
+.link:hover {
   -webkit-transform: scale(1.2);
   transform: scale(1.2);
 }
