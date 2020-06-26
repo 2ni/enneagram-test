@@ -3,16 +3,19 @@
     <h1>Das Enneagramm - die Lehre von Persönlichkeiten</h1>
     <Enneagram width="15rem" />
     <p>
-    Das Enneagramm ist eine Typenlehre zur Beschreibung verschiedener Persönlichkeitsstrukturen. Hier kannst Du anonym einen <router-link class="link" :to="{name: 'Questionnaire'}">Test</router-link> ausfüllen, der Dir Hinweise zu Deiner Struktur gibt.
+    Das Enneagramm ist eine Typenlehre zur Beschreibung verschiedener Persönlichkeitsstrukturen. Hier kannst Du anonym einen <router-link class="link" :to="{name: 'Questionnaire'}">Fragebogen</router-link> ausfüllen, der Dir Hinweise zu Deiner Struktur gibt.
     </p>
     <p>
-    Wichtig zu wissen, ist, dass der Test nur mögliche Tendenzen aufzeigt. Das Enneagramm ist ein viel zu komplexes System um mittels eines 5-minütigen Tests ein plausibles Resultat abzugeben. Nichts desto trotz kann das Resultat Dir wichtige Hinweise mitgeben, in welche Richtung Du beginnen kannst zu schauen.
+    Wichtig zu wissen, ist, dass der Fragebogen nur mögliche Tendenzen aufzeigt. Das Enneagramm ist ein viel zu komplexes System um mittels eines 5-minütigen Tests ein plausibles Resultat abzugeben. Nichts desto trotz kann das Resultat Dir wichtige Hinweise mitgeben, in welche Richtung Du beginnen kannst zu schauen.
+    </p>
+    <p>
+    Du solltest die ~100 Fragen zügig beantworten und nicht mehr als 10 Minuten benötigen (max 5sec pro Frage).
     </p>
     <p>
     In diesem Sinne viel Spass beim Ausfüllen!
     </p>
     <div>
-      <router-link :to="{name: 'Questionnaire'}" class="large green button">zum Test</router-link>
+      <router-link :to="{name: 'Questionnaire'}" class="large green button">zum Fragebogen</router-link>
     </div>
     <h4>Weitere Ressourcen zum Enneagramm</h4>
     <ul>

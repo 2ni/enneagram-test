@@ -1,8 +1,8 @@
 <template>
   <div id="app">
     <div id="nav">
-      <router-link to="/" exact>Home</router-link> |
-      <router-link to="/test">Test</router-link>
+      <router-link :to="{name: 'Home'}" exact>Home</router-link> |
+      <router-link :to="{name: 'Questionnaire'}">Fragebogen</router-link>
     </div>
     <div id="status" :class="status ? 'statusVisible' : 'statusHidden'">{{status}}</div>
     <router-view class="content" :class="status ? 'contentWithStatus' : 'contentWithOutStatus'" @updateStatus="updateStatus"/>
@@ -67,23 +67,50 @@ body {
   color: #42b983;
 }
 
-a {
-  color: #fff;
-  font-weight:bold;
-  text-decoration:none;
-}
-
 .link {
-  color: #fff;
-  display: inline-block;
-  transition: .3s;
-  font-weight:bold;
-  text-decoration:none;
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+
+  padding-left: .25rem;
+  padding-bottom: .15rem;
+  padding-right: .25rem;
+
+  color: #000;
+  font-size: 1rem;
+  font-weight: bold;
+
+  text-decoration: none;
 }
 
-.link:hover {
-  -webkit-transform: scale(1.2);
-  transform: scale(1.2);
+.link::before {
+  content: "";
+  width: 100%;
+  height: 80%;
+  background-image: linear-gradient(to top, #8bc9ab 30%, rgba(0, 0, 0, 0) 55%);
+
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  z-index: -1;
+
+  will-change: width;
+  transform: rotate(-1deg);
+  transform-origin: left bottom
+}
+
+.link:hover::before {
+  width: 80%;
+  transition-duration: .15s;
+}
+
+.link::before {
+  transition: width .1s ease-out;
+}
+
+.link:focus {
+  outline: 2px solid #a3d4bc;
+  outline-offset: .5rem;
 }
 
 .statusVisible {
