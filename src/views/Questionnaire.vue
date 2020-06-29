@@ -3,16 +3,16 @@
     <!-- {{answers}} {{numberOfQuestions}} -->
     <ul v-bind:class="{hidden: showResults}">
       <li v-for="q in questions" :key="q.question | hash">
-        <div class="question" v-bind:class="{error: hasError.indexOf($options.filters.hash(q.question)) > -1}">{{q.question}}</div>
+        <div class="question" v-bind:class="{error: hasError.indexOf($options.filters.hash(q.question)) > -1}">{{q.type}} {{q.question}}</div>
         <div class="answerBlock">
           <div>
-            <input v-on:change="questionAnswered" type="radio" :name="q.question | hash" value="yes" :id="1 + q.question | hash" :data-type="q.type">
-            <label :for="1 + q.question | hash" class="medium green button">Ja</label>
+            <input :checked="getStoredAnswer(q) === 1" v-on:change="questionAnswered" type="radio" :name="q.question | hash" value="yes" :id="getID(q.question, 'y')" :data-type="q.type">
+            <label :for="getID(q.question, 'y')" class="medium green button">Ja</label>
             <check-icon class="isSelected green" />
           </div>
           <div>
-            <input class="answer_no" v-on:change="questionAnswered" type="radio" :name="q.question | hash" value="no" :id="q.question | hash" :data-type="q.type">
-            <label :for="q.question | hash" class="medium red button">Nein</label>
+            <input :checked="getStoredAnswer(q) === -1" class="answer_no" v-on:change="questionAnswered" type="radio" :name="q.question | hash" value="no" :id="getID(q.question, 'n')" :data-type="q.type">
+            <label :for="getID(q.question, 'n')" class="medium red button">Nein</label>
             <check-icon class="isSelected red" />
           </div>
         </div>
@@ -46,6 +46,7 @@
           </div>
         </div>
       </div>
+      <button class="large green button" v-on:click="clearAll">Neu starten</button>
     </div>
   </div>
 </template>
@@ -59,6 +60,8 @@ export default {
     return {
       questions: shuffle(QUESTIONS),
       numberOfQuestions: {},
+      storedQuestions: [],
+      storedAnswers: {},
       openQuestions: [],
       answers: {},
       hasError: [],
@@ -66,16 +69,27 @@ export default {
     }
   },
   created () {
-    if (this.$route.query.q) {
-      this.questions = this.questions.slice(0, this.$route.query.q)
+    try {
+      this.storedQuestions = JSON.parse(localStorage.getItem('storedQuestions')) || []
+      this.storedAnswers = JSON.parse(localStorage.getItem('storedAnswers')) || {}
+    } catch (e) {
     }
-    this.numberOfQuestions.total = this.questions.length
-    this.questions.forEach(question => {
-      this.$set(this.answers, question.type, 0)
-      this.$set(this.numberOfQuestions, parseInt(question.type), (this.numberOfQuestions[question.type] + 1) || 1)
-      this.openQuestions.push(this.$options.filters.hash(question.question))
-    })
-    this.$emit('updateStatus', this.status)
+
+    // set order according to saved questions
+    const mapOrder = (array, order) => {
+      array.sort((a, b) => {
+        const A = this.getID(a.question)
+        const B = this.getID(b.question)
+        return order.indexOf(A) > order.indexOf(B) ? -1 : 1
+      })
+    }
+
+    // if not all questions are saved, the known questions are saved at the end
+    const order = [...this.storedQuestions]
+    order.reverse()
+    mapOrder(this.questions, order)
+
+    this.init()
   },
   destroyed () {
     this.$emit('updateStatus', '')
@@ -86,6 +100,32 @@ export default {
     }
   },
   methods: {
+    init: function () {
+      if (this.$route.query.q) {
+        this.questions = this.questions.slice(0, this.$route.query.q)
+      }
+
+      this.numberOfQuestions.total = this.questions.length
+      this.questions.forEach(question => {
+        const id = this.getID(question.question)
+        const answer = this.storedAnswers[id] || 0
+
+        this.$set(this.answers, parseInt(question.type), (this.answers[question.type] + answer) || Math.max(0, answer))
+        this.$set(this.numberOfQuestions, parseInt(question.type), (this.numberOfQuestions[question.type] + 1) || 1)
+
+        // saved answers can be 1=ja, -1=nein, 0=unanswered
+        if (!Math.abs(answer)) {
+          this.openQuestions.push(this.$options.filters.hash(question.question))
+        }
+      })
+      this.$emit('updateStatus', this.status)
+    },
+    getStoredAnswer: function (question) {
+      return this.storedAnswers[this.getID(question.question)] || 0
+    },
+    getID: function (question, type = '') {
+      return (type ? type + '-' : '') + this.$options.filters.hash(question)
+    },
     answerInPercent: function (type) {
       return parseInt(100 * this.answers[type] / this.numberOfQuestions[type])
     },
@@ -100,6 +140,25 @@ export default {
     questionAnswered: function (e) {
       const type = e.target.getAttribute('data-type')
       let diff = e.target.value === 'yes' ? 1 : -1
+
+      // store questions and its order on 1st answer
+      const newQuestions = []
+      this.questions.forEach(question => {
+        const id = this.getID(question.question)
+        newQuestions.push(id)
+        // this.$set(this.storedQuestions, id, 0)
+      })
+      this.storedQuestions = newQuestions
+
+      // save new anwser
+      const idQuestion = e.target.id.substr(2)
+      this.storedAnswers[idQuestion] = diff
+      try {
+        localStorage.setItem('storedQuestions', JSON.stringify(this.storedQuestions))
+        localStorage.setItem('storedAnswers', JSON.stringify(this.storedAnswers))
+      } catch (e) {
+      }
+
       // available in the array -> 1st time response
       const index = this.openQuestions.indexOf(parseInt(e.target.name))
       if (index !== -1) {
@@ -118,6 +177,13 @@ export default {
       }
 
       this.showResults = true
+    },
+    clearAll: function (e) {
+      localStorage.clear()
+      this.storedAnswers = {}
+      this.storedQuestions = []
+      this.init()
+      this.showResults = false
     }
   }
 }
@@ -157,6 +223,10 @@ function shuffle (array) {
 .resultsVsible {
   visibility: visible;
   opacity: 1;
+}
+
+#results button {
+  margin-top: 1rem;
 }
 
 .hidden {
