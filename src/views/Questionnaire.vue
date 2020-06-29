@@ -3,7 +3,7 @@
     <!-- {{answers}} {{numberOfQuestions}} -->
     <ul v-bind:class="{hidden: showResults}">
       <li v-for="q in questions" :key="q.question | hash">
-        <div class="question" v-bind:class="{error: hasError.indexOf($options.filters.hash(q.question)) > -1}">{{q.type}} {{q.question}}</div>
+        <div class="question" v-bind:class="{error: hasError.indexOf($options.filters.hash(q.question)) > -1}">{{q.question}}</div>
         <div class="answerBlock">
           <div>
             <input :checked="getStoredAnswer(q) === 1" v-on:change="questionAnswered" type="radio" :name="q.question | hash" value="yes" :id="getID(q.question, 'y')" :data-type="q.type">
