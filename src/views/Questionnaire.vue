@@ -3,7 +3,9 @@
     <!-- {{answers}} {{numberOfQuestions}} -->
     <ul v-bind:class="{hidden: showResults}">
       <li v-for="q in questions" :key="q.question | hash">
-        <div class="question" v-bind:class="{error: hasError.indexOf($options.filters.hash(q.question)) > -1}">{{q.question}}</div>
+        <div class="question" v-bind:class="{error: hasError.indexOf($options.filters.hash(q.question)) > -1}">
+          <span :class="{hidden: !dbg}">{{q.type}}</span>{{q.question}}
+        </div>
         <div class="answerBlock">
           <div>
             <input :checked="getStoredAnswer(q) === 1" v-on:change="questionAnswered" type="radio" :name="q.question | hash" value="yes" :id="getID(q.question, 'y')" :data-type="q.type">
@@ -22,7 +24,7 @@
       <button class="large green button" v-on:click="getStructure">Zeige mir mein Enneagramm Typ</button>
       <div class="error" v-if="hasError.length > 0">Bitte beantworte jede Frage mit ja oder nein</div>
     </div>
-    <div id="results" :class="showResults ? 'resultsVisible' : 'resultsHidden'">
+    <div id="results" :class="{resultsHidden: !showResults && !dbg, alwaysVisible: dbg}">
       <div class="graph">
         <div class="bars">
           <div style="height: 100%; width: 0; border: 0; margin: 0;" class="graph-element bar" />
@@ -105,16 +107,18 @@ export default {
         this.questions = this.questions.slice(0, this.$route.query.q)
       }
 
+      this.dbg = this.$route.query.dbg
+
       this.numberOfQuestions.total = this.questions.length
       this.questions.forEach(question => {
         const id = this.getID(question.question)
-        const answer = this.storedAnswers[id] || 0
+        const answer = Math.max(0, this.storedAnswers[id] || 0)
 
-        this.$set(this.answers, parseInt(question.type), (this.answers[question.type] + answer) || Math.max(0, answer))
+        this.$set(this.answers, parseInt(question.type), (this.answers[question.type] || 0) + answer)
         this.$set(this.numberOfQuestions, parseInt(question.type), (this.numberOfQuestions[question.type] + 1) || 1)
 
         // saved answers can be 1=ja, -1=nein, 0=unanswered
-        if (!Math.abs(answer)) {
+        if (!this.storedAnswers[id]) {
           this.openQuestions.push(this.$options.filters.hash(question.question))
         }
       })
@@ -167,6 +171,10 @@ export default {
       }
 
       this.answers[type] += diff
+      if (this.dbg) {
+        console.log('type: ' + type + ', diff: ' + diff)
+        console.log(JSON.parse(JSON.stringify(this.answers)))
+      }
       this.$emit('updateStatus', this.status)
     },
     getStructure: function (e) {
@@ -223,6 +231,11 @@ function shuffle (array) {
 .resultsVsible {
   visibility: visible;
   opacity: 1;
+}
+
+.alwaysVisible {
+  position: fixed;
+  bottom: 0;
 }
 
 #results button {
@@ -301,6 +314,16 @@ function shuffle (array) {
   margin-right: 1rem;
   margin-left: 1rem;
   width: 100%;
+}
+
+#questionnaire .question span {
+  margin-right: .3rem;
+}
+#questionnaire .question span::before {
+  content: "(";
+}
+#questionnaire .question span::after {
+  content: ")";
 }
 
 #questionnaire .answerBlock {
