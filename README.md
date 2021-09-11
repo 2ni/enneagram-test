@@ -15,6 +15,8 @@ npm run serve
 ```
 npm run build
 ```
+This copies all necessary files to dist/
+The nginx server then can serve these files
 
 ### Run your unit tests
 ```
